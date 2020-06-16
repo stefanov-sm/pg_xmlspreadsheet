@@ -1,8 +1,11 @@
 -- Postgres server-side query to spreadsheet 
 
-CREATE OR REPLACE FUNCTION public.pg_xmlspreadsheet(arg_query text, arg_parameters json DEFAULT '{}'::json) RETURNS SETOF text LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION public.pg_xmlspreadsheet(arg_query text, arg_parameters json DEFAULT '{}'::json)
+RETURNS SETOF text LANGUAGE plpgsql AS 
 $function$
+
 DECLARE
+
 WORKBOOK_HEADER constant text[] := array[
 '<?xml version="1.0" encoding="utf8"?>',
 '<?mso-application progid="Excel.Sheet"?>',
@@ -67,7 +70,8 @@ running_column integer;
 cold boolean := true;
 
 BEGIN
-  foreach v_value in array WORKBOOK_HEADER loop
+
+foreach v_value in array WORKBOOK_HEADER loop
   	return next v_value;
   end loop;
 
@@ -119,8 +123,10 @@ BEGIN
     end loop;
     return next END_ROW;
   end loop;
+
   foreach v_value in array WORKBOOK_FOOTER loop
   	return next v_value;
   end loop;
+
 END;
 $function$;
