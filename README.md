@@ -10,7 +10,7 @@ pg_xmlspreadsheet has some differences compared to pg_spreadsheetml. Text substi
 
 __arg_query__ is parameterised.
 Parameter placeholders are defined as valid uppercase identifiers with two underscores as prefix and suffix, i.e. `__FROM__`, `__TO__`, `__PATTERN__` etc.  
-Placeholders are rewritten into runtime expressions that always return type `text`. This is why they may need to be explicitly cast (`__FROM__::integer, __TO__::integer` in the example below).  
+Placeholders are rewritten into runtime expressions that always return type `text`. This is why they may need to be explicitly cast (i.e. `__FROM__::integer, __TO__::integer` in the example below).  
   
 Optional __arg_parameters__ is JSON with parameters' names/values, i.e. `{"from":15, "to":100015, "pattern":"%3%"}`. Parameters' names are K&R case-insesnitive identifiers.  
   
