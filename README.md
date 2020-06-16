@@ -4,16 +4,35 @@ Export query results to Excel as XML spreadsheet format (SpreadsheetML)
 This function is an improvement of [pg_spreadsheetml](https://github.com/stefanov-sm/pg_spreadsheetml)
 
 ```PGSQL
-FUNCTION pg_xmlspreadsheet(arg_query text, arg_parameters json DEFAULT '{}'::json)
- RETURNS SETOF text
- LANGUAGE plpgsql
+FUNCTION pg_xmlspreadsheet(arg_query text, arg_parameters json DEFAULT '{}') RETURNS SETOF text
 ```
-__arg_query__ is parameterised by plain text susbtitution (macro expansion).  
-Macro parameter placeholders are defined as valid uppercase identifiers with two underscores as prefix and suffix, i.e. `__NUMBER_OF_DAYS__`, `__COST__`, etc. See the [example](https://github.com/stefanov-sm/pg_spreadsheetml/tree/master/example) SQL-only and PHP CLI scripts.
+The behaviour of pg_xmlspreadsheet has subtle differences compared to pg_spreadsheetml. Text substitution of parameters is no longer used and injection risk is checked.
 
-Optional __arg_parameters__ is JSON with parameters' names/values, i.e. `{"number_of_days":"7 days", "cost":15.00}`. Parameters' names are K&R case-insesnitive identifiers.
+__arg_query__ is parameterised.
+Parameter placeholders are defined as valid uppercase identifiers with two underscores as prefix and suffix, i.e. `__FROM__`, `__TO__`, `__PATTERN__` etc.  
+Placeholders are rewritten into runtime expressions that always return type `text`. This is why they may need to be explicitly cast.  
+  
+Optional __arg_parameters__ is JSON with parameters' names/values, i.e. `{"from":15, "to":100015, "pattern":"%3%"}`. Parameters' names are K&R case-insesnitive identifiers.  
+See the example below.
 
-__Note:__ pg_spreadsheetml is __injection prone__ and therefore it must be declared as a security definer owned by a limited user.
-
-
-__Note:__ The example runs against the popular [DVD rental](https://www.postgresqltutorial.com/postgresql-sample-database/) sample database.
+```PGSQL
+-- Postgres server-side query to spreadsheet example
+COPY
+(
+ SELECT xml_line FROM pg_xmlspreadsheet
+ (
+  $query$
+  select
+  	v as "value",
+  	to_char(v % 4000, 'FMRN') as "mod 4000 roman",
+  	v^2 as "square",
+  	v^3 as "cube",
+  	clock_timestamp() as "date and time"
+  from generate_series(__FROM__::integer, __TO__::integer, 1) t(v)
+  where v::text like __PATTERN__;
+  $query$,
+  '{"from":15, "to":100015, "pattern":"%3%"}'::json
+ ) AS t(xml_line)
+)
+TO '/-- path-to --/delme.xml'
+```
