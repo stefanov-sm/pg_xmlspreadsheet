@@ -72,7 +72,7 @@ cold boolean := true;
 BEGIN
 
   foreach running_line in array WORKBOOK_HEADER loop
-  	return next running_line;
+    return next running_line;
   end loop;
 
   -- Rewrite the input qwery. Replace parameter placeholders with json attribute expressions  
@@ -125,7 +125,7 @@ BEGIN
   end loop;
 
   foreach running_line in array WORKBOOK_FOOTER loop
-  	return next running_line;
+    return next running_line;
   end loop;
 
 END;
