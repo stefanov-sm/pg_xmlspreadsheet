@@ -17,4 +17,4 @@ COPY
   json_build_object('from', 15, 'to', 100015, 'pattern', '%3%')
  ) AS t(xml_line)
 )
-TO '/-- path-to --/delme.xml'
+TO '/path/to/proba.xml';
