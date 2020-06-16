@@ -35,6 +35,6 @@ COPY
   '{"from":15, "to":100015, "pattern":"%3%"}'::json
  ) AS t(xml_line)
 )
-TO '/-- path-to --/proba.xml'
+TO '/path/to/proba.xml'
 ```
 The resulting file is zipped __proba.zip__.
