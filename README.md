@@ -12,7 +12,9 @@ Parameter placeholders are defined as valid uppercase identifiers with two under
 
 __NB__: Placeholders are rewritten into runtime expressions that _always_ return type `text`. This is why they may need to be explicitly cast (i.e. `__FROM__::integer, __TO__::integer` in the example below).  
   
-Optional __arg_parameters__ is JSON with parameters' names/values, i.e. `{"from":15, "to":100015, "pattern":"%3%"}`. Parameters' names are K&R case-insesnitive identifiers.  
+Optional __arg_parameters__ is JSON with parameters' names/values, e.g.  
+`{"from":15, "to":100015, "pattern":"%3%"}`  
+Parameters' names are K&R case-insesnitive identifiers.  
   
 Example:
 
