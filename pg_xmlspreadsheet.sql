@@ -81,13 +81,7 @@ BEGIN
     return next running_line;
   end loop;
 
-  -- Rewrite the input qwery. Replace parameter placeholders with json attribute expressions  
-  for v_key in select "key" from json_each_text(arg_parameters) loop
-    arg_query := replace(arg_query, '__'||upper(v_key)||'__', '($1->>'''||v_key||''')');
-  end loop;
-
-  -- Now it is possible to run injection-safe 'execute using' 
-  for r in execute arg_query using arg_parameters loop
+  for r in execute dynsql_safe(arg_query, arg_parameters) using arg_parameters loop
 
     jr := to_json(r);
     if cold then
