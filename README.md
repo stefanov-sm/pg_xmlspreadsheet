@@ -28,13 +28,14 @@ COPY
   	to_char(v % 4000, 'FMRN') as "mod 4000 roman",
   	v^2 as "square",
   	v^3 as "cube",
-  	clock_timestamp() as "date and time"
+  	clock_timestamp() as "date and time",
+  	'#<see more>##https://www.google.com/search?q='||v::text as "search Google"
   from generate_series(__FROM__::integer, __TO__::integer, 1) t(v)
   where v::text like __PATTERN__;
   $query$,
   '{"from":15, "to":100015, "pattern":"%3%"}'::json
  ) AS t(xml_line)
 )
-TO '/path/to/proba.xml'
+TO '/path/to/proba.xml';
 ```
 The resulting file is zipped __proba.zip__.
