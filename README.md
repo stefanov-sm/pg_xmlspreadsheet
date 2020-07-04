@@ -1,5 +1,5 @@
 # pg_xmlspreadsheet
-Export query results to Microsoft Excel format as XML spreadsheet format (SpreadsheetML)
+Export query results to Microsoft Excel format as XML spreadsheet format (SpreadsheetML).
 
 This function is an improvement of [pg_spreadsheetml](https://github.com/stefanov-sm/pg_spreadsheetml). The prototype of the function is as follows:
 ```PGSQL
