@@ -1,5 +1,5 @@
 ----------------------------------------------------
--- pg_xmlspreadsheet helpers, S. Stefanov, June-2020
+-- pg_xmlspreadsheet helpers, S. Stefanov, July-2020
 ----------------------------------------------------
 
 create or replace function xml_escape(s text)
