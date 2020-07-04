@@ -1,6 +1,6 @@
----------------------------------------------------
--- pg_xmlspreadsheet helpers, S. Stefanov, Feb-2020
----------------------------------------------------
+----------------------------------------------------
+-- pg_xmlspreadsheet helpers, S. Stefanov, June-2020
+----------------------------------------------------
 
 create or replace function xml_escape(s text)
 returns text language sql immutable strict as
@@ -9,7 +9,7 @@ $$
 $$;
 
 create or replace function public.json_typeofx(j json)
-returns text language sql immutable AS
+returns text language sql immutable strict as
 $$
 select
   case
@@ -21,4 +21,18 @@ select
     end
     else json_typeof(j)
   end;
+$$;
+
+create or replace function public.dynsql_safe(arg_query text, arg_parameters json)
+returns text language plpgsql immutable strict as
+$$
+declare
+	running_key text;
+begin
+	-- Rewrite the query. Convert __MACRO__ placeholders into json attribute text expressions
+	for running_key in select "key" from json_each_text(arg_parameters) loop
+		arg_query := replace(arg_query, '__' || upper(running_key) || '__', '($1->>''' || running_key || ''')');
+	end loop;
+	return arg_query;
+end;
 $$;
