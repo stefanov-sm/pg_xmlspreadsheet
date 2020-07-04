@@ -1,6 +1,6 @@
---------------------------------------------------
--- pg_spreadsheetml, S. Stefanov, Feb-June 2020
---------------------------------------------------
+-----------------------------------------------
+-- pg_spreadsheetml, S. Stefanov, Feb-July 2020
+-----------------------------------------------
 
 CREATE OR REPLACE FUNCTION public.pg_xmlspreadsheet(arg_query text, arg_parameters json DEFAULT '{}'::json)
 RETURNS SETOF text LANGUAGE plpgsql AS 
