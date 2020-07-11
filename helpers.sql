@@ -37,7 +37,7 @@ $$;
   select dynsql_safe
   (
    'select x from t where y = __A__::integer and z <> __B__;', 
-   '{"a":"one", "b":"two", "good_one":"three"}'
+   '{"a":1, "b":"two", "good_one":"three"}'
   );
   ------------------------------------
   select x from t where y = ($1->>'a')::integer and z <> ($1->>'b');
@@ -45,7 +45,7 @@ $$;
   select dynsql_safe
   (
    'select x from t where y = __A__::integer and z <> __B__;', 
-   '{"a":"one", "b":"two", "bad one":"three"}'
+   '{"a":1, "b":"two", "bad one":"three"}'
   );
   ------------------------------------
   SQL Error [P0001]: ERROR: Non-K&R key found in JSON(B) arguments
@@ -55,7 +55,7 @@ $$;
   select dynsql_safe
   (
    'select x from t where y = __A__::integer and z <> __B__;', 
-   '{"a":"one", "bb":"two"}'
+   '{"a":1, "bb":"two"}'
   );
   ------------------------------------
   SQL Error [P0001]: ERROR: 1 macro(s) not processed, please check your JSON(B) arguments!
