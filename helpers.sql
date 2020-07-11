@@ -1,3 +1,40 @@
+/**
+  * Performs macro expansion.
+  * A macro is a K&R identifier with a double underscore at the beginning and at the end,
+  * like for example __FOO__.
+  * Macros are globally substituted with json attribute text expressions from `args` json(b) object.
+  * `args` attribute names are restricted to K&R identifiers. 
+  *
+  * Examples:
+
+  select dynsql_safe
+  (
+   'select x from t where y = __A__::integer and z <> __B__;', 
+   '{"a":"one", "b":"two", "good_one":"three"}'
+  );
+  ------------------------------------
+  select x from t where y = ($1->>'a')::integer and z <> ($1->>'b');
+  
+  select dynsql_safe
+  (
+   'select x from t where y = __A__::integer and z <> __B__;', 
+   '{"a":"one", "b":"two", "bad one":"three"}'
+  );
+  ------------------------------------
+  SQL Error [P0001]: ERROR: Non-K&R key found in JSON(B) arguments
+    Hint: Offending key: "bad one"
+    Where: PL/pgSQL function dynsql_safe(text,jsonb) line 11 at RAISE
+  
+  select dynsql_safe
+  (
+   'select x from t where y = __A__::integer and z <> __B__;', 
+   '{"a":"one", "bb":"two"}'
+  );
+  ------------------------------------
+  SQL Error [P0001]: ERROR: 1 macro(s) not processed, please check your JSON(B) arguments!
+    Hint: Macro(s) left: __B__
+    Where: PL/pgSQL function dynsql_safe(text,jsonb) line 19 at RAISE
+ */
 ------------------------------------------------------------------
 -- pg_xmlspreadsheet helpers, S. Stefanov, Luca Ferrari, July-2020
 ------------------------------------------------------------------
@@ -66,26 +103,26 @@ $$;
 create or replace function public.dynsql_safe(arg_query text, args jsonb) returns text as
 $$
 declare
-	running_key text;
-	tokens_left text[];
+    running_key text;
+    tokens_left text[];
 begin
-	-- Rewrite the query. Convert __MACRO__ placeholders into json attribute text expressions
-	for running_key in select "key" from jsonb_each_text(args) loop
-		if running_key ~* '^[_A-Z][_A-Z0-9]*$' then
-			arg_query := replace(arg_query, '__'||upper(running_key)||'__', '($1->>'''||running_key||''')');
-		else
-			raise exception 'Non-K&R key found in JSON(B) arguments'
-			using hint = 'Offending key: "'||running_key||'"';
-		end if;
-	end loop;
+    -- Rewrite the query. Convert __MACRO__ placeholders into json attribute text expressions
+    for running_key in select "key" from jsonb_each_text(args) loop
+        if running_key ~* '^[_A-Z][_A-Z0-9]*$' then
+            arg_query := replace(arg_query, '__'||upper(running_key)||'__', '($1->>'''||running_key||''')');
+        else
+            raise exception 'Non-K&R key found in JSON(B) arguments'
+            using hint = 'Offending key: "'||running_key||'"';
+        end if;
+    end loop;
 
-	-- check there is no macro without expansion
-  	tokens_left := array(select regexp_matches(arg_query, '__[_A-Z][_A-Z0-9]*__', 'g')); -- upper case only
-   	if array_length(tokens_left, 1) > 0 then
-	    raise exception '% macro(s) not processed, please check your JSON(B) arguments!', array_length(tokens_left, 1)
+    -- check there is no macro without expansion
+    tokens_left := array(select regexp_matches(arg_query, '__[_A-Z][_A-Z0-9]*__', 'g')); -- upper case only
+    if array_length(tokens_left, 1) > 0 then
+        raise exception '% macro(s) not processed, please check your JSON(B) arguments!', array_length(tokens_left, 1)
         using hint = 'Macro(s) left: '||array_to_string(tokens_left, ', ');
-    end if;        		
-	return arg_query;
+    end if;             
+    return arg_query;
 end;
 $$ language plpgsql;
 
