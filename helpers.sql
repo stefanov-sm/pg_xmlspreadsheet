@@ -1,40 +1,3 @@
-/**
-  * Performs macro expansion.
-  * A macro is a K&R identifier with a double underscore at the beginning and at the end,
-  * like for example __FOO__.
-  * Macros are globally substituted with json attribute text expressions from `args` json(b) object.
-  * `args` attribute names are restricted to K&R identifiers. 
-  *
-  * Examples:
-
-  select dynsql_safe
-  (
-   'select x from t where y = __A__::integer and z <> __B__;', 
-   '{"a":"one", "b":"two", "good_one":"three"}'
-  );
-  ------------------------------------
-  select x from t where y = ($1->>'a')::integer and z <> ($1->>'b');
-  
-  select dynsql_safe
-  (
-   'select x from t where y = __A__::integer and z <> __B__;', 
-   '{"a":"one", "b":"two", "bad one":"three"}'
-  );
-  ------------------------------------
-  SQL Error [P0001]: ERROR: Non-K&R key found in JSON(B) arguments
-    Hint: Offending key: "bad one"
-    Where: PL/pgSQL function dynsql_safe(text,jsonb) line 11 at RAISE
-  
-  select dynsql_safe
-  (
-   'select x from t where y = __A__::integer and z <> __B__;', 
-   '{"a":"one", "bb":"two"}'
-  );
-  ------------------------------------
-  SQL Error [P0001]: ERROR: 1 macro(s) not processed, please check your JSON(B) arguments!
-    Hint: Macro(s) left: __B__
-    Where: PL/pgSQL function dynsql_safe(text,jsonb) line 19 at RAISE
- */
 ------------------------------------------------------------------
 -- pg_xmlspreadsheet helpers, S. Stefanov, Luca Ferrari, July-2020
 ------------------------------------------------------------------
@@ -65,7 +28,7 @@ $$;
   * like for example __FOO__.
   * Macros are globally substituted with json attribute text expressions from `args` json(b) object.
   * `args` attribute names are restricted to K&R identifiers. 
-  * Valuable features courtesy Luca Ferrari 
+  * Valuable quality features by Luca Ferrari 
   * 
   * Intended Use: EXECUTE dynsql_safe(sql_template, json_args) USING json_args;
   * 
@@ -99,8 +62,7 @@ $$;
     Hint: Macro(s) left: __B__
     Where: PL/pgSQL function dynsql_safe(text,jsonb) line 19 at RAISE
 */
-
-create or replace function public.dynsql_safe(arg_query text, args jsonb) returns text as
+create or replace function dynsql_safe(arg_query text, args jsonb) returns text as
 $$
 declare
     running_key text;
@@ -126,7 +88,11 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace function public.json_typeofx(j json)
+/**
+  * json_typeof extension
+  * detects date, datetime and href types.
+*/
+create or replace function json_typeofx(j json)
 returns text language sql immutable strict as
 $$
 select
