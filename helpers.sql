@@ -65,7 +65,7 @@ $$;
 create or replace function dynsql_safe(arg_query text, args jsonb) returns text as
 $$
 declare
-	   KRUCID_RX constant text := '[_A-Z][_A-Z0-9]*';
+    KRUCID_RX constant text := '[_A-Z][_A-Z0-9]*';
     running_key text;
     tokens_left text[];
 begin
