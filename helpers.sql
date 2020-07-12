@@ -65,12 +65,13 @@ $$;
 create or replace function dynsql_safe(arg_query text, args jsonb) returns text as
 $$
 declare
+	   KRUCID_RX constant text := '[_A-Z][_A-Z0-9]*';
     running_key text;
     tokens_left text[];
 begin
     -- Rewrite the query. Convert __MACRO__ placeholders into json attribute text expressions
     for running_key in select "key" from jsonb_each_text(args) loop
-        if running_key ~* '^[_A-Z][_A-Z0-9]*$' then
+        if running_key ~* ('^'||KRUCID_RX||'$') then
             arg_query := replace(arg_query, '__'||upper(running_key)||'__', '($1->>'''||running_key||''')');
         else
             raise exception 'Non-K&R key found in JSON(B) arguments'
@@ -79,7 +80,7 @@ begin
     end loop;
 
     -- check there is no macro without expansion
-    tokens_left := array(select regexp_matches(arg_query, '__[_A-Z][_A-Z0-9]*__', 'g')); -- upper case only
+    tokens_left := array(select regexp_matches(arg_query, '__'||KRUCID_RX||'__', 'g')); -- upper case only
     if array_length(tokens_left, 1) > 0 then
         raise exception '% macro(s) not processed, please check your JSON(B) arguments!', array_length(tokens_left, 1)
         using hint = 'Macro(s) left: '||array_to_string(tokens_left, ', ');
